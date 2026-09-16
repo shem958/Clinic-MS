@@ -1,0 +1,241 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Smart Clinic Management & Patient Portal REST API",
+    "description": "Golang Gin REST API supporting real-world Kenyan Healthcare workflows: Front Desk Walk-In Intake, SMS/Email Credentials Dispatch, Red-Zone Emergency Fast-Track, Nurse Bedside Triage Vitals, Doctor Consultations, and 5-Role RBAC Governance.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Smart Clinic Engineering Team",
+      "email": "support@smartclinic.co.ke"
+    }
+  },
+  "host": "localhost:8080",
+  "basePath": "/api/v1",
+  "schemes": ["http"],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "System Health Check",
+        "description": "Returns status, service identity, and current server timestamp.",
+        "responses": {
+          "200": {
+            "description": "API is healthy and operational"
+          }
+        }
+      }
+    },
+    "/patients": {
+      "get": {
+        "summary": "Get All Patients",
+        "description": "Retrieves medical record profiles for registered walk-in, telehealth, and emergency patients.",
+        "responses": {
+          "200": {
+            "description": "List of patients returned"
+          }
+        }
+      }
+    },
+    "/patients/walk-in": {
+      "post": {
+        "summary": "Receptionist Walk-In Onboarding & Credential Dispatch",
+        "description": "Creates patient record, generates Medical Record Number (MRN) & PIN, dispatches automated SMS/Email, and queues for Nurse Triage.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "example": "Sarah Jenkins" },
+                "age": { "type": "integer", "example": 34 },
+                "gender": { "type": "string", "example": "Female" },
+                "phone": { "type": "string", "example": "+254 712 345 678" },
+                "email": { "type": "string", "example": "sarah.j@example.com" },
+                "doctorId": { "type": "string", "example": "doc-1" },
+                "insuranceProvider": { "type": "string", "example": "NHIF / SHA Kenya" },
+                "reasonForVisit": { "type": "string", "example": "General Consultation & Vitals" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Patient onboarded and credentials sent"
+          }
+        }
+      }
+    },
+    "/patients/emergency-fast-track": {
+      "post": {
+        "summary": "Red-Zone Emergency Fast-Track Intake",
+        "description": "Bypasses paperwork queue. Generates emergency MRN, records bedside vitals, and sends urgent notification broadcast to ER doctor.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string", "example": "Trauma Patient (Unidentified)" },
+                "age": { "type": "integer", "example": 35 },
+                "gender": { "type": "string", "example": "Male" },
+                "chiefComplaint": { "type": "string", "example": "Severe Traumatic Injury & Respiratory Distress" },
+                "doctorId": { "type": "string", "example": "doc-1" },
+                "immediateTemp": { "type": "number", "example": 38.5 },
+                "immediateSpO2": { "type": "integer", "example": 92 }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Emergency fast-track registered"
+          }
+        }
+      }
+    },
+    "/triage": {
+      "get": {
+        "summary": "Get Nurse Triage Logbook",
+        "description": "Retrieves all triage vital records (BP, Temp, Height, Weight, SpO2, Priority).",
+        "responses": {
+          "200": { "description": "Triage records returned" }
+        }
+      },
+      "post": {
+        "summary": "Record Nurse Triage Vitals",
+        "description": "Nurse records physical vitals prior to doctor consultation and updates appointment status to Triaged-Pending-Doctor.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "patientId": { "type": "string", "example": "pat-1" },
+                "bpSystolic": { "type": "integer", "example": 120 },
+                "bpDiastolic": { "type": "integer", "example": 80 },
+                "temperature": { "type": "number", "example": 36.7 },
+                "heightCm": { "type": "number", "example": 168 },
+                "weightKg": { "type": "number", "example": 65.5 },
+                "spo2": { "type": "integer", "example": 98 },
+                "pulseRate": { "type": "integer", "example": 72 },
+                "priority": { "type": "string", "example": "Routine" },
+                "chiefComplaintSummary": { "type": "string", "example": "Headache & Fever" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Triage vitals recorded" }
+        }
+      }
+    },
+    "/appointments": {
+      "get": {
+        "summary": "Get All Appointments",
+        "description": "Lists appointments across all stages (Registered, In-Nurse-Triage, Triaged-Pending-Doctor, In-Consultation, Completed).",
+        "responses": {
+          "200": { "description": "Appointments returned" }
+        }
+      }
+    },
+    "/sms-logs": {
+      "get": {
+        "summary": "Get SMS / Email Credential Logbook",
+        "description": "Audit trail of all automated credential broadcasts sent to patients upon reception intake.",
+        "responses": {
+          "200": { "description": "SMS logs returned" }
+        }
+      }
+    },
+    "/rbac/permissions": {
+      "get": {
+        "summary": "Get RBAC Matrix Permissions",
+        "description": "Lists permissions assigned to Patient, Doctor, Nurse, Receptionist, and Admin roles.",
+        "responses": {
+          "200": { "description": "RBAC permissions returned" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "User Sign-In (General)",
+        "description": "Authenticates Patient, Doctor, Nurse, or Receptionist with email/username and password.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": { "type": "string", "example": "doctor@smartclinic.co.ke" },
+                "password": { "type": "string", "example": "doctor123" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Authentication successful, returns user profile" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/admin-login": {
+      "post": {
+        "summary": "Admin Governance Clearance Sign-In",
+        "description": "High-security login portal for System Administrators with clearance token.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "username": { "type": "string", "example": "admin@smartclinic.co.ke" },
+                "password": { "type": "string", "example": "admin2026" },
+                "clearanceToken": { "type": "string", "example": "SEC-GOV-990" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Clearance granted" },
+          "401": { "description": "Invalid admin credentials or clearance token" }
+        }
+      }
+    },
+    "/patient/activate": {
+      "post": {
+        "summary": "Walk-In Patient Self-Service Account Claiming",
+        "description": "Claims temporary walk-in account using SMS activation code and registers permanent patient credentials.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "activationCode": { "type": "string", "example": "ACT-0041" },
+                "password": { "type": "string", "example": "MySecurePass123!" },
+                "nationalId": { "type": "string", "example": "38472910" },
+                "email": { "type": "string", "example": "sarah.j@example.com" },
+                "phone": { "type": "string", "example": "+254 712 345 678" }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Account claimed and activated successfully" },
+          "404": { "description": "Invalid or expired activation code" }
+        }
+      }
+    }
+  }
+}
